@@ -6,8 +6,6 @@ class Caddy < Formula
   license "Apache-2.0"
   head "https://github.com/caddyserver/caddy.git"
 
-  option "with-cloudflare", "Compile with dns.providers.cloudflare"
-
   depends_on "go" => :build
 
   resource "xcaddy" do
@@ -15,11 +13,29 @@ class Caddy < Formula
     sha256 "9915970e69c07324f4d032741741516523147b6250e1426b16e6b794d4a56f05"
   end
 
+  CADDY_MODULES = {
+    alidns:                "github.com/caddy-dns/alidns",
+    azure:                 "github.com/caddy-dns/azure",
+    cloudflare:            "github.com/caddy-dns/cloudflare",
+    digitalocean:          "github.com/caddy-dns/digitalocean",
+    dnspod:                "github.com/caddy-dns/dnspod",
+    duckdns:               "github.com/caddy-dns/duckdns",
+    gandi:                 "github.com/caddy-dns/gandi",
+    hetzner:               "github.com/caddy-dns/hetzner",
+    "lego-deprecated":     "github.com/caddy-dns/lego-deprecated",
+    "openstack-designate": "github.com/caddy-dns/openstack-designate",
+    route53:               "github.com/caddy-dns/route53",
+    vultr:                 "github.com/caddy-dns/vultr",
+  }.freeze
+
+  CADDY_MODULES.each do |k, v|
+    option "with-#{k}", "Compile with #{v}"
+  end
+
   def with_list
-    list = []
-    if build.with? "cloudflare"
-      list.push "--with", "github.com/caddy-dns/cloudflare"
-    end
+    CADDY_MODULES.map do |k, v|
+      ["--with", v] if build.with? k.to_s
+    end.compact.flatten
   end
 
   def install
